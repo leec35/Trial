@@ -1,0 +1,409 @@
+#include<sys/times.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<stdio.h>
+#include<semaphore.h>
+#include<sys/mman.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<fcntl.h>
+#define blocksize 5
+#define MIN(x,y) (((x) < (y)) ? (x):(y))
+double start, stop, used, mf;
+int *mem;
+int *a, *b, *c;
+int *shmc;
+sem_t semaphore;
+double ftime(void);
+void multiply (int *a, int *b, int *c, int n);
+double ftime (void)
+{
+    struct tms t;
+
+    times ( &t );
+
+    return (t.tms_utime + t.tms_stime) / 100.0;
+}
+
+void multiply (int *a, int *b, int *c, int n)
+{
+   int i, j, k;
+
+   for (i=0; i<n; i++)
+   {
+     for (j=0; j<n; j++)
+       {
+         c[i*n+j] = 0;
+
+    }
+        }
+
+        printf("\n");
+        printf("\n");
+    for (i=0; i<n; i++)
+    {
+       for (j=0; j<n; j++)
+       {
+         for (k=0; k<n; k++){
+         c[i*n+j] = c[i*n+j]+ a[i*n+k]*b[k*n+j];
+        }
+//              printf (" %d ", c[i*n+j]);
+
+
+        }
+//      printf("\n");
+     }
+  }
+void multiplyTrans (int *a, int *b, int *c, int n)
+{
+
+        int i, j, k;
+        for (i = 0; i < n; i++)
+        {
+        for (j = 0; j < n; j++)
+        {
+                c[i*n+j] = 0;
+        }
+//              printf("\n");
+        }
+        for (i = 0; i < n; i++)
+        {
+         for (j = 0; j < n; j++)
+         {
+          for (k = 0; k < n; k++)
+          {
+                c[i*n+j]=c[i*n+j]+ a[i*n+k]*b[k*n+j];
+
+          }
+//              printf(" % d ", c[i*n+j]);
+         }
+//      printf("\n");
+        }
+//      printf("\n");
+//      printf("\n");
+}
+void multiplyBlock (int *a, int *b, int *c, int n)
+{
+        int i, io, j, jo, k, ko, count;
+
+        for (i=0; i<n; i++)
+   {
+     for (j=0; j<n; j++)
+       {
+         c[i*n+j] = 0;
+
+    }
+        }
+
+        for (io = 0; io < n; io+=blocksize)
+        {
+         for (jo = 0; jo < n; jo+=blocksize)
+         {
+          for (ko = 0; ko < n; ko+=blocksize)
+          {
+           for (i = io; i < MIN(io+blocksize,n);++i)
+           {
+            for (j = jo; j < MIN(jo+blocksize,n);++j)
+            {
+             for (k = ko; k < MIN(ko+blocksize,n);++k)
+             {
+                count++;
+              c[i*n+j]=c[i*n+j]+ a[i*n+k]*b[k*n+j];
+            //printf("c[%d] = %d, a[%d] = %d, b[%d] = %d\n ",(i*n+j), c[i*n+j], (i*n+k), a[i*n+k], (k*n+j), b[k*n+j]);
+
+                }
+
+            }
+
+                }
+           }
+          }
+         }
+        //printf("Blocked");
+        for (i = 0; i < n; i++)
+        {
+        for (j = 0; j < n; j++)
+        {
+//              printf(" %d ", c[i*n+j]);
+        }
+//              printf("\n");
+        }
+//      printf("\n");
+//      printf("\n");
+        //printf("count = %d", count);
+
+}
+         {
+          for (ko = 0; ko < n; ko+=blocksize)
+          {
+           for (i = io; i < MIN(io+blocksize,n);++i)
+           {
+            for (j = jo; j < MIN(jo+blocksize,n);++j)
+            {
+             for (k = ko; k < MIN(ko+blocksize,n);++k)
+             {
+                count++;
+              c[i*n+j]=c[i*n+j]+ a[i*n+k]*b[k*n+j];
+            //printf("c[%d] = %d, a[%d] = %d, b[%d] = %d\n ",(i*n+j), c[i*n+j], (i*n+k), a[i*n+k], (k*n+j), b[k*n+j]);
+
+                }
+
+            }
+
+                }
+           }
+          }
+         }
+        //printf("Blocked");
+        for (i = 0; i < n; i++)
+        {
+        for (j = 0; j < n; j++)
+        {
+//              printf(" %d ", c[i*n+j]);
+        }
+//              printf("\n");
+        }
+//      printf("\n");
+//      printf("\n");
+        //printf("count = %d", count);
+
+}
+void multiplyThreadBlock (int *a, int *b, int *c,int n)
+{
+  int i, io, j,jo,k,ko,count,pid;
+  sem_t *semarray[n*n];
+  for(i = 0; i < n; i++)
+{
+  for(j = 0; j < n; j++)
+  {
+    shmc[i*n+j];
+   }
+ }
+count = 0;
+   for(i=0; i < (n*n); i++)
+   {
+     sem_init(&(semarray[i]), 1, 1);
+   }
+for(io = 0; io < n; io+=blocksize)
+{
+  for(jo = 0; jo < n; jo+=blocksize)
+  {
+    for(ko = 0; ko < n; ko+=blocksize)
+    {
+      count++;
+      pid = fork();
+      if (pid < 0)
+      {
+      }
+      else if (pid > 0)
+      {
+      }
+      else
+      {
+        for(i = io; i < MIN(io+blocksize, n); i++)
+        {
+          for(j = jo; j < MIN(jo+blocksize, n); j++)
+          {
+            for(k = ko; k < MIN(ko+blocksize, n);k++)
+            {
+              sem_wait(&semarray[i*n+j]);
+              shmc[i*n+j] += a[i*n+k]*b[k*n+j];
+              sem_post(&semarray[i*n+j]);
+            }
+           }
+          }
+          exit(0);
+        }
+       }
+      }
+     }
+    //for(i = 0; i < count; i++)
+    //{
+      wait(NULL);
+    //}
+  }
+int main (void)
+{
+   int i, j, n, kids,shm_id, matrixsize;
+   printf ( "Enter the value of n: ");
+    scanf ( "%d", &n);
+   printf ( "Enter the number of kids: ");
+    scanf ( "%d", &kids);
+
+        shm_id = shm_open("/lee_assign3", O_RDWR|O_CREAT, 0666);
+        if (shm_id<0)
+        {
+                printf("Could not create lee_assign3\n");
+                exit(1);
+        }
+        matrixsize = (n*n*n);
+        //printf("matrixsize = %d\n", matrixsize);
+        ftruncate(shm_id, matrixsize);
+        shmc = (int *)mmap(NULL, matrixsize, PROT_READ|PROT_WRITE, MAP_SHARED, shm_id, 0);
+        if (shmc < 0)
+        {
+                fprintf(stderr, "Could not map lee_assign3\n");
+                exit(1);
+        }
+        close(shm_id);
+        shm_unlink("/lee_assign3");
+        //printf("Size of shmc = %d\n", sizeof(shmc));
+
+
+
+   //Populate arrays....
+     a= (int*)malloc((n*n)*sizeof(int));
+        printf(" a = %d ", a);
+     b= (int*)malloc((n*n)*sizeof(int));
+        printf(" b = %d ", b);
+     c= (int*)malloc((n*n)*sizeof(int));
+        printf(" c = %d ", c);
+        printf("\n");
+        printf(" A Array \n");
+     for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++)
+        {
+            a[i*n+j] = 10;
+//      printf(" %d ", a[i*n+j]);
+      }
+//      printf("\n");
+        }
+        printf("B Array \n");
+     for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++){
+          b[i*n+j] = 7;
+ //               printf(" %d ", b[i*n+j]);
+        }
+   // printf("\n");
+    }
+      printf("-------------------------Normal Multiplication Run Time----------------------------");
+      start = ftime();
+//    printf("\n");
+
+      multiply (a,b,c,n);
+      stop = ftime();
+      used = stop - start;
+      mf = (n*n*n *2.0) / used / 1000000.0;
+      printf ("\n");
+      printf ( "Elapsed time:   %10.2f \n", used);
+      printf( "DP MFLOPS:     %10.2f \n", mf);
+      //printf("Successful Free");
+
+        for (i=0; i<n; i++)
+     {
+       a[i]= malloc(sizeof(int)*(n*n));
+       b[i]= malloc(sizeof(int)*(n*n));
+       c[i]= malloc(sizeof(int)*(n*n));
+
+      }
+
+        //printf("After Freeing:");
+//      printf("\n");
+         for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++)
+        {
+            a[i*n+j] = 10;
+        //printf(" %d ", a[i*n+j]);
+      }
+  //      printf("\n");
+        }
+        //printf("B Array \n");
+     for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++){
+          b[i*n+j] = 7;
+          //printf(" %d ", b[i*n+j]);
+        }
+        }
+      printf("----------------------------------Transpose Matrix Multiplication-------------------------------");
+      start = ftime();
+      multiplyTrans (a,b,c,n);
+      stop = ftime();
+      used = stop - start;
+      mf = (n*n*n *2.0) / used / 1000000.0;
+      printf ("\n");
+      printf ( "Elapsed time:   %10.2f \n", used);
+      printf ( "DP MFLOPS:       %10.2f \n", mf);
+        for (i=0; i<n; i++)
+     {
+       a[i]= malloc(sizeof(int)*(n*n));
+       b[i]= malloc(sizeof(int)*(n*n));
+       c[i]= malloc(sizeof(int)*(n*n));
+      }
+  for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++)
+        {
+            a[i*n+j] = 10;
+       // printf(" %d ", a[i*n+j]);
+      }
+      //  printf("\n");
+        }
+        //printf("B Array \n");
+     for (i=0; i<n; i++)
+     {
+        for (j=0; j<n; j++){
+          b[i*n+j] = 7;
+         // printf(" %d ", b[i*n+j]);
+        }
+        }
+      printf("-----------------------------Block Matrix Multiplication-----------------------------\n");
+      start = ftime();
+      multiplyBlock (a,b,c,n);
+      stop = ftime();
+      used = stop - start;
+      mf = (n*n*n *2.0) / used / 1000000.0;
+      printf ("\n");
+      printf ( "Elapsed time:   %10.2f \n", used);
+      printf ( "DP MFLOPS:       %10.2f \n", mf);
+      //sharedmem(n);
+      printf("----------------------Threaded Block Matrix Multiplication--------------------------\n");
+          for (i=0; i<n; i++)
+     {
+       a[i]= malloc(sizeof(int)*(n*n));
+       b[i]= malloc(sizeof(int)*(n*n));
+       c[i]= malloc(sizeof(int)*(n*n));
+      }
+
+        for (i=0; i<n; i++)
+        {
+        for (j=0; j<n; j++)
+        {
+            a[i*n+j] = 10;
+           // printf(" %d \n", a[i*n+j]);
+        }
+        //printf("\n");
+        }
+        for (i=0; i<n; i++)
+        {
+        for (j=0; j<n; j++){
+          b[i*n+j] = 7;
+        }
+        }
+      printf("\n");
+      start = ftime();
+     //printf("Starting");
+      multiplyThreadBlock (a,b,c,n);
+      stop = ftime();
+      used = stop - start;
+      mf = (n*n*n *2.0) / used / 1000000.0;
+      printf ("\n");
+      printf ( "Elapsed time:   %10.2f \n", used);
+      printf ( "DP MFLOPS:       %10.2f \n", mf);
+      for(i=0;i<n;i++)
+      {
+//      for(j=0;j<n;j++)
+//      {
+                //printf(" %d ", shmc[i*n+j]);
+//      }
+        //printf("\n");
+//      }
+      return (0);
+
+}
+}
+
